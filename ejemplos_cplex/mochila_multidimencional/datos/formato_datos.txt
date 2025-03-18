@@ -1,0 +1,4 @@
+<Numero objetos> <Numero Dimenciones> <Solucion Optima Conocida>
+<Beneficio de los objetos, vector C>
+<Matriz pesos, matrix A>
+<Restricciones por dimencion, vector b>

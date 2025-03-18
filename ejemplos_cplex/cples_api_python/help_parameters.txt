@@ -1,0 +1,151 @@
+Help on RootParameterGroup in module cplex._internal._parameter_classes object:
+
+class RootParameterGroup(ParameterGroup)
+ |  RootParameterGroup(env, members)
+ |  
+ |  Class containing all the Cplex parameters.
+ |  
+ |  Method resolution order:
+ |      RootParameterGroup
+ |      ParameterGroup
+ |      builtins.object
+ |  
+ |  Methods defined here:
+ |  
+ |  __init__(self, env, members)
+ |      non-public
+ |  
+ |  __repr__(self)
+ |      Return 'parameters'.
+ |  
+ |  read_file(self, filename)
+ |      Reads a set of parameters from the file filename.
+ |  
+ |  reset(self)
+ |      Sets the parameters in the group to their default values.
+ |  
+ |  tune_problem(self, fixed_parameters_and_values=None)
+ |      Tunes parameters for a Cplex problem.
+ |      
+ |      If fixed_parameters_and_values is given, it may be either a
+ |      ParameterSet instance or a sequence of sequences of length 2
+ |      containing instances of the Parameter class that are to be fixed
+ |      during the tuning process and the values at which they are to be
+ |      fixed.
+ |      
+ |      tune_problem returns the status of the tuning procedure, which
+ |      is an attribute of parameters.tuning_status.
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> ps = c.create_parameter_set()
+ |      >>> ps.add(c.parameters.lpmethod,
+ |      ...        c.parameters.lpmethod.values.auto)
+ |      >>> status = c.parameters.tune_problem(ps)
+ |      >>> c.parameters.tuning_status[status]
+ |      'completed'
+ |      >>> status = c.parameters.tune_problem([
+ |      ...     (c.parameters.lpmethod,
+ |      ...      c.parameters.lpmethod.values.auto)])
+ |      >>> c.parameters.tuning_status[status]
+ |      'completed'
+ |      >>> status = c.parameters.tune_problem()
+ |      >>> c.parameters.tuning_status[status]
+ |      'completed'
+ |  
+ |  tune_problem_set(self, filenames, filetypes=None, fixed_parameters_and_values=None)
+ |      Tunes parameters for a set of problems.
+ |      
+ |      filenames must be a sequence of strings specifying a set of
+ |      problems to tune.
+ |      
+ |      If filetypes is given, it must be a sequence of the same
+ |      length as filenames also consisting of strings that specify
+ |      the types of the corresponding files.
+ |      
+ |      If fixed_parameters_and_values is given, it may be either a
+ |      ParameterSet instance or a sequence of sequences of length 2
+ |      containing instances of the Parameter class that are to be fixed
+ |      during the tuning process and the values at which they are to be
+ |      fixed.
+ |      
+ |      tune_problem_set returns the status of the tuning procedure,
+ |      which is an attribute of parameters.tuning_status.
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> ps = c.create_parameter_set()
+ |      >>> ps.add(c.parameters.lpmethod,
+ |      ...        c.parameters.lpmethod.values.auto)
+ |      >>> status = c.parameters.tune_problem_set(
+ |      ...     filenames=["lpex.mps", "example.mps"],
+ |      ...     fixed_parameters_and_values=ps)
+ |      >>> c.parameters.tuning_status[status]
+ |      'completed'
+ |      >>> status = c.parameters.tune_problem_set(
+ |      ...     filenames=["lpex.mps", "example.mps"],
+ |      ...     fixed_parameters_and_values=[
+ |      ...         (c.parameters.lpmethod,
+ |      ...          c.parameters.lpmethod.values.auto)])
+ |      >>> c.parameters.tuning_status[status]
+ |      'completed'
+ |      >>> status = c.parameters.tune_problem_set(
+ |      ...     filenames=["lpex.mps", "example.mps"])
+ |      >>> c.parameters.tuning_status[status]
+ |      'completed'
+ |  
+ |  write_file(self, filename)
+ |      Writes a set of parameters to the file filename.
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data and other attributes defined here:
+ |  
+ |  tuning_status = <cplex._internal._parameter_classes.TuningConstants ob...
+ |  
+ |  ----------------------------------------------------------------------
+ |  Methods inherited from ParameterGroup:
+ |  
+ |  get_all(self)
+ |      Returns a list of all the parameters in the group.
+ |      
+ |      Returns a list of (parameter, value) pairs.  Each parameter is
+ |      an instance of the Parameter class, and thus the parameter
+ |      value can be changed via its set method, or this object can be
+ |      passed to the tuning functions.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> for parameter, value in c.parameters.get_all():
+ |      ...     pass  # do something
+ |  
+ |  get_changed(self)
+ |      Returns a list of the changed parameters in the group.
+ |      
+ |      Returns a list of (parameter, value) pairs.  Each parameter is
+ |      an instance of the Parameter class, and thus the parameter
+ |      value can be changed via its set method, or this object can be
+ |      passed to the tuning functions.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> c.parameters.read.datacheck.set(
+ |      ...     c.parameters.read.datacheck.values.assist)
+ |      >>> for parameter, value in c.parameters.get_changed():
+ |      ...     pass  # do something
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data descriptors inherited from ParameterGroup:
+ |  
+ |  __dict__
+ |      dictionary for instance variables (if defined)
+ |  
+ |  __weakref__
+ |      list of weak references to the object (if defined)
+

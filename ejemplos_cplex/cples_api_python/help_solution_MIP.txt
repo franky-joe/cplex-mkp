@@ -1,0 +1,173 @@
+Help on MIPSolutionInterface in module cplex._internal._subinterfaces object:
+
+class MIPSolutionInterface(cplex._internal._baseinterface.BaseInterface)
+ |  MIPSolutionInterface(parent)
+ |  
+ |  Methods for accessing solutions to a MIP.
+ |  
+ |  Method resolution order:
+ |      MIPSolutionInterface
+ |      cplex._internal._baseinterface.BaseInterface
+ |      builtins.object
+ |  
+ |  Methods defined here:
+ |  
+ |  __init__(self, parent)
+ |      Creates a new MIPSolutionInterface.
+ |      
+ |      The MIP solution interface is exposed by the top-level `Cplex`
+ |      class as Cplex.solution.MIP.  This constructor is not meant to
+ |      be used externally.
+ |  
+ |  get_best_objective(self)
+ |      Returns the currently best known bound of all the remaining
+ |      open nodes in a branch-and-cut tree.
+ |      
+ |      It is computed for a minimization problem as the minimum
+ |      objective function value of all remaining unexplored nodes.
+ |      Similarly, it is computed for a maximization problem as the
+ |      maximum objective function value of all remaining unexplored
+ |      nodes.
+ |      
+ |      For a regular MIP optimization, this value is also the best known
+ |      bound on the optimal solution value of the MIP problem.  In fact,
+ |      when a problem has been solved to optimality, this value matches
+ |      the optimal solution value.
+ |      
+ |      However, for the populate method, the value can also exceed the
+ |      optimal solution value if CPLEX has already solved the model to
+ |      optimality but continues to search for additional solutions.
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("ind.lp")
+ |      >>> c.solve()
+ |      >>> best_obj = c.solution.MIP.get_best_objective()
+ |      >>> abs(best_obj - 499.0) < 1e-6
+ |      True
+ |  
+ |  get_cutoff(self)
+ |      Returns the MIP cutoff value.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("ind.lp")
+ |      >>> c.solve()
+ |      >>> cutoff = c.solution.MIP.get_cutoff()
+ |      >>> abs(cutoff - 499.0) < 1e-6
+ |      True
+ |  
+ |  get_incumbent_node(self)
+ |      Returns the node number of the best solution found.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> c.parameters.randomseed.set(1)
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("ind.lp")
+ |      >>> c.parameters.threads.set(1)
+ |      >>> c.solve()
+ |      >>> c.solution.MIP.get_incumbent_node() >= 0
+ |      True
+ |  
+ |  get_mip_relative_gap(self)
+ |      Returns the MIP relative gap.
+ |      
+ |      See :mipapi:`CPXgetmiprelgap` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("ind.lp")
+ |      >>> c.solve()
+ |      >>> c.solution.MIP.get_mip_relative_gap()
+ |      0.0
+ |  
+ |  get_num_cuts(self, cut_type)
+ |      Returns the number of cuts of the specified type.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> c.parameters.randomseed.set(1)
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("ind.lp")
+ |      >>> c.solve()
+ |      >>> ncuts = c.solution.MIP.get_num_cuts(
+ |      ...     c.solution.MIP.cut_type.zero_half)
+ |  
+ |  get_subproblem_status(self)
+ |      Returns the solution status of the last subproblem optimization.
+ |      
+ |      Returns an attribute of Cplex.solution.status if there was an
+ |      error termination where a subproblem could not be solved to
+ |      completion during mixed integer optimization.  Otherwise 0
+ |      (zero) is returned if no error occurred.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("ind.lp")
+ |      >>> c.solve()
+ |      >>> c.solution.MIP.get_subproblem_status()
+ |      0
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data and other attributes defined here:
+ |  
+ |  cut_type = <cplex._internal._subinterfaces.CutType object>
+ |  
+ |  ----------------------------------------------------------------------
+ |  Methods inherited from cplex._internal._baseinterface.BaseInterface:
+ |  
+ |  get_indices(self, name)
+ |      Converts from names to indices.
+ |      
+ |      If name is a string, get_indices returns the index of the
+ |      object with that name.  If no such object exists, an
+ |      exception is raised.
+ |      
+ |      If name is a sequence of strings, get_indices returns a list
+ |      of the indices corresponding to the strings in name.
+ |      Equivalent to map(self.get_indices, name).
+ |      
+ |      If the subclass does not provide an index function (i.e., the
+ |      interface is not indexed), then a NotImplementedError is raised.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> indices = c.variables.add(names=["a", "b"])
+ |      >>> c.variables.get_indices("a")
+ |      0
+ |      >>> c.variables.get_indices(["a", "b"])
+ |      [0, 1]
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data descriptors inherited from cplex._internal._baseinterface.BaseInterface:
+ |  
+ |  __dict__
+ |      dictionary for instance variables (if defined)
+ |  
+ |  __weakref__
+ |      list of weak references to the object (if defined)
+

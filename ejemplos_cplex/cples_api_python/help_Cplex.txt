@@ -1,0 +1,1007 @@
+Help on class Cplex in module cplex:
+
+class Cplex(builtins.object)
+ |  Cplex(*args)
+ |  
+ |  A class encapsulating a CPLEX Problem.
+ |  
+ |  An instance of the Cplex class provides methods for creating,
+ |  modifying, and querying an optimization problem, solving it, and
+ |  querying aspects of the solution.
+ |  
+ |  Most of the methods are provided within subinterfaces: for example,
+ |  methods for adding, modifying, and querying data associated with
+ |  variables are within the `Cplex.variables` interface, and methods for
+ |  querying the solution are within the `Cplex.solution` category.
+ |  
+ |  Methods defined here:
+ |  
+ |  __del__(self)
+ |      non-public
+ |  
+ |  __enter__(self)
+ |      Enter the runtime context related to this object.
+ |      
+ |      The "with" statement will bind this method's return value to the
+ |      target specified in the as clause of the statement, if any.
+ |      
+ |      Cplex objects return themselves.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> with cplex.Cplex() as cpx:
+ |      ...     # do stuff
+ |      ...     pass
+ |  
+ |  __exit__(self, exc_type, exc_value, traceback)
+ |      Exit the runtime context.
+ |      
+ |      When we exit the with-block, the `end()` method is called
+ |      automatically.
+ |  
+ |  __init__(self, *args)
+ |      Constructor of the Cplex class.
+ |      
+ |      The Cplex constructor accepts four types of argument lists.
+ |      
+ |      >>> cpx = cplex.Cplex()  # doctest: +SKIP
+ |      
+ |      cpx is a new problem with no data
+ |      
+ |      >>> cpx = cplex.Cplex("filename")  # doctest: +SKIP
+ |      
+ |      cpx is a new problem containing the data in filename. If filename
+ |      does not exist, an exception is raised.
+ |      
+ |      >>> cpx = cplex.Cplex("filename", "filetype")  # doctest: +SKIP
+ |      
+ |      same as form 2, but cplex reads the file filename as a file of
+ |      type filetype, rather than inferring the file type from its
+ |      extension.
+ |      
+ |      >>> cpx = cplex.Cplex(old_cpx)  # doctest: +SKIP
+ |      
+ |      cpx contains the same problem data as old_cpx, but is a different
+ |      object and contains no solution data. Future changes to one do
+ |      not affect the other.
+ |      
+ |      The Cplex object is a context manager and can be used, like so:
+ |      
+ |      >>> import cplex
+ |      >>> with cplex.Cplex() as cpx:
+ |      ...     # do stuff
+ |      ...     pass
+ |      
+ |      When the with-block is finished, the `end()` method will be
+ |      called automatically.
+ |  
+ |  cleanup(self, epsilon)
+ |      Deletes values from the problem data with absolute value
+ |      smaller than epsilon.
+ |      
+ |      See :cpxapi:`CPXcleanup` in the Callable Library Reference Manual
+ |      for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> indices = c.variables.add(obj=[1.0, 1e-10, 1.0])
+ |      >>> c.objective.get_linear()
+ |      [1.0, 1e-10, 1.0]
+ |      >>> c.cleanup(epsilon=1e-6)
+ |      >>> c.objective.get_linear()
+ |      [1.0, 0.0, 1.0]
+ |  
+ |  copy_parameter_set(self, source)
+ |      Returns a deep copy of a parameter set.
+ |      
+ |      In a sense, this a convenience function; it is equivalent to
+ |      querying what parameters are in the source parameter set,
+ |      querying their values, and then adding those parameters to the
+ |      target parameter set.
+ |      
+ |      Note
+ |        The source parameter set must have been created by this CPLEX
+ |        problem object. Mixing parameter sets from different CPLEX
+ |        problem objects is not supported.
+ |      
+ |      Note
+ |        When this CPLEX problem object is destroyed, the parameter set
+ |        object returned by this function will also be destoyed.
+ |      
+ |      See `ParameterSet`.
+ |      
+ |      See :cpxapi:`CPXparamsetcopy` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> source = c.create_parameter_set()
+ |      >>> source.add(c.parameters.advance,
+ |      ...            c.parameters.advance.values.none)
+ |      >>> len(source)
+ |      1
+ |      >>> target = c.copy_parameter_set(source)
+ |      >>> len(target)
+ |      1
+ |  
+ |  copylp(self, numcols, numrows, objsense=1, obj=None, rhs=None, senses='', matbeg=None, matcnt=None, matind=None, matval=None, lb=None, ub=None, range_values=None, colnames=None, rownames=None)
+ |      Copies LP data into a CPLEX problem object.
+ |      
+ |      The arguments define an objective function, constraint matrix,
+ |      variable bounds, righthand side, constraint senses, range values,
+ |      names of constraints, and names of variables.
+ |      
+ |      Note
+ |        This method can give better performance when building a model,
+ |        but it may not be as user friendly as using other methods. To
+ |        compare different techniques, see the lpex1.py example.
+ |      
+ |      Note
+ |        Calling this method destroys any existing data associated with
+ |        the problem object.
+ |      
+ |      numcols : the number of columns in the constraint matrix, or
+ |      equivalently, the number of variables in the problem object.
+ |      
+ |      numrows : the number of rows in the constraint matrix, not
+ |      including the objective function or bounds on the variables.
+ |      
+ |      objsense : sets the sense of the objective function. Must be
+ |      either Cplex.objective.sense.minimize or
+ |      Cplex.objective.sense.maximize.
+ |      
+ |      obj : a list of floats of length at least `numcols` containing
+ |      the objective function coefficients. Required if `numcols` > 0.
+ |      
+ |      rhs : a list of floats of length at least `numrows` containing
+ |      the righthand side value for each constraint in the constraint
+ |      matrix. Required if `numrows` > 0.
+ |      
+ |      senses : A list of single-character strings or a string
+ |      containing the sense of each constraint in the constraint matrix.
+ |      Must be of length at least `numrows`. Each entry must be one of
+ |      'G', 'L', 'E', and 'R', indicating greater-than-or-equal-to (>=),
+ |      less-than-or-equal-to (<=), equality (=), and ranged constraints,
+ |      respectively. Required if `numrows` > 0.
+ |      
+ |      With respect to the arguments `matbeg` (beginning of the matrix),
+ |      `matcnt` (count of the matrix), `matind` (indices of the matrix),
+ |      and `matval` (values of the matrix), CPLEX needs to know only the
+ |      nonzero coefficients. These arguments are required if
+ |      `numcols` > 0 and `numrows` > 0.
+ |      
+ |      These arrays are accessed as follows. Suppose that CPLEX wants to
+ |      access the entries in some column j. These are assumed to be
+ |      given by the entries:
+ |      matval[matbeg[j]],.., matval[matbeg[j]+matcnt[j]-1]
+ |      
+ |      The corresponding row indices are:
+ |      matind[matbeg[j]],.., matind[matbeg[j]+matcnt[j]-1]
+ |      
+ |      lb : a list of length at least `numcols` containing the lower
+ |      bound on each of the variables. Required if `numcols` > 0.
+ |      
+ |      ub : a list of length at least `numcols` containing the upper
+ |      bound on each of the variables. Required if `numcols` > 0.
+ |      
+ |      range_values : a list of floats, specifying the difference
+ |      between lefthand side and righthand side of each linear
+ |      constraint. If range_values[i] > 0 (zero) then the constraint i
+ |      is defined as rhs[i] <= rhs[i] + range_values[i]. If
+ |      range_values[i] < 0 (zero) then constraint i is defined as
+ |      rhs[i] + range_value[i] <= a*x <= rhs[i].
+ |      
+ |      colnames : a list of strings of length at least `numcols`
+ |      containing the names of the matrix columns or, equivalently, the
+ |      constraint names.
+ |      
+ |      rownames : a list of strings of length at least `numrows`
+ |      containing the names of the matrix rows or, equivalently, the
+ |      constraint names.
+ |      
+ |      See :cpxapi:`CPXcopylpwnames` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> c.copylp(numcols=3,
+ |      ...          numrows=2,
+ |      ...          objsense=c.objective.sense.maximize,
+ |      ...          obj=[1.0, 2.0, 3.0],
+ |      ...          rhs=[20.0, 30.0],
+ |      ...          senses="LL",
+ |      ...          matbeg=[0, 2, 4],
+ |      ...          matcnt=[2, 2, 2],
+ |      ...          matind=[0, 1, 0, 1, 0, 1],
+ |      ...          matval=[-1.0, 1.0, 1.0, -3.0, 1.0, 1.0],
+ |      ...          lb=[0.0, 0.0, 0.0],
+ |      ...          ub=[40.0, cplex.infinity, cplex.infinity],
+ |      ...          range_values=[0.0, 0.0],
+ |      ...          colnames=["x1", "x2", "x3"],
+ |      ...          rownames=["c1", "c2"])
+ |  
+ |  create_parameter_set(self)
+ |      Returns a new CPLEX parameter set object that is associated
+ |      with this CPLEX problem object.
+ |      
+ |      Note
+ |        When this CPLEX problem object is destroyed, the parameter set
+ |        object returned by this function will also be destoyed.
+ |      
+ |      See `ParameterSet`.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> ps = c.create_parameter_set()
+ |      >>> ps.add(c.parameters.advance,
+ |      ...        c.parameters.advance.values.none)
+ |      >>> len(ps)
+ |      1
+ |  
+ |  end(self)
+ |      Releases the Cplex object.
+ |      
+ |      Frees all data structures associated with CPLEX. After a call of
+ |      the method end(), the invoking Cplex object and all objects that
+ |      have been created with it (such as variables and constraints) can
+ |      no longer be used. Attempts to use them subsequently raise a
+ |      ValueError.
+ |      
+ |      Note
+ |        The Cplex object is a context manager. Thus, rather than
+ |        calling this method explicitly, the best practice should be to
+ |        use a Cplex object in a "with" statement (see `__enter__` and
+ |        `__exit__`).
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> cpx = cplex.Cplex()
+ |      >>> cpx.end()
+ |  
+ |  get_aborter(self)
+ |      Returns the `Aborter` being used by the invoking object.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> aborter = c.use_aborter(cplex.Aborter())
+ |      >>> aborter = c.get_aborter()
+ |  
+ |  get_dettime(self)
+ |      Returns a deterministic time stamp in ticks.
+ |      
+ |      To measure elapsed deterministic time in ticks between a starting
+ |      point and ending point of an operation, take the deterministic
+ |      time stamp at the starting point; take the deterministic time
+ |      stamp at the ending point; subtract the starting deterministic
+ |      time stamp from the ending deterministic time stamp.
+ |      
+ |      The absolute value of the deterministic time stamp is not
+ |      meaningful.
+ |      
+ |      See :cpxapi:`CPXgetdettime` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> start = c.get_dettime()
+ |      >>> c.solve()
+ |      >>> solve_dettime = c.get_dettime() - start
+ |  
+ |  get_num_cores(self)
+ |      Returns the number of cores on this machine.
+ |      
+ |      See :cpxapi:`CPXgetnumcores` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> num_cores = c.get_num_cores()
+ |  
+ |  get_parameter_set(self)
+ |      Returns a parameter set containing parameters that have been
+ |      changed from their default values in the environment.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> c.parameters.advance.set(c.parameters.advance.values.none)
+ |      >>> ps = c.get_parameter_set()
+ |      >>> val = ps.get(c.parameters.advance)
+ |      >>> val == c.parameters.advance.values.none
+ |      True
+ |  
+ |  get_problem_name(self)
+ |      Returns the problem name.
+ |      
+ |      See :cpxapi:`CPXgetprobname` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> c.set_problem_name("prob1")
+ |      >>> c.get_problem_name()
+ |      'prob1'
+ |  
+ |  get_problem_type(self)
+ |      Returns the problem type.
+ |      
+ |      See :cpxapi:`CPXgetprobtype` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      The return value is an attribute of `problem_type`.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.get_problem_type()
+ |      0
+ |      >>> c.problem_type[c.get_problem_type()]
+ |      'LP'
+ |  
+ |  get_stats(self)
+ |      Returns a `Stats` object containing problem statistics.
+ |      
+ |      Note
+ |        Printing the `Stats` object will give a nice summary of the
+ |        problem statistics in human readable form (e.g. as with the
+ |        "display problem statistics" command in the CPLEX interactive).
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> stats = c.get_stats()
+ |      >>> stats.num_variables
+ |      32
+ |      >>> stats.num_linear_constraints
+ |      27
+ |  
+ |  get_time(self)
+ |      Returns a time stamp in seconds.
+ |      
+ |      To measure time spent between a starting point and ending point
+ |      of an operation, take the result of this method at the starting
+ |      point; take the result of this method at the end point; subtract
+ |      the starting time stamp from the ending time stamp; the
+ |      subtraction yields elapsed time in seconds.
+ |      
+ |      The interpretation of this value as wall clock time or CPU time
+ |      is controlled by the parameter clocktype.
+ |      
+ |      The absolute value of the time stamp is not meaningful.
+ |      
+ |      See :cpxapi:`CPXgettime` in the Callable Library Reference Manual
+ |      for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> start = c.get_time()
+ |      >>> c.solve()
+ |      >>> solve_time = c.get_time() - start
+ |  
+ |  get_version(self)
+ |      Returns a string specifying the version of CPLEX.
+ |      
+ |      See :cpxapi:`CPXversion` in the Callable Library Reference Manual
+ |      for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> version = c.get_version()
+ |  
+ |  get_versionnumber(self)
+ |      Returns an integer specifying the version of CPLEX.
+ |      
+ |      The version of CPLEX is in the format vvrrmmff, where vv is the
+ |      version, rr is the release, mm is the modification, and ff is the
+ |      fixpack number. For example, for CPLEX version 12.5.0.1 the
+ |      returned value is 12050001.
+ |      
+ |      See :cpxapi:`CPXversionnumber` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> versionnumber = c.get_versionnumber()
+ |  
+ |  populate_solution_pool(self)
+ |      Generates a variety of solutions to a discrete problem (MIP, MIQP, MIQCP).
+ |      
+ |      The algorithm that populates the solution pool works in two
+ |      phases.
+ |      
+ |      In the first phase, it solves the problem to optimality (or
+ |      some stopping criterion set by the user) while it sets up a
+ |      branch and cut tree for the second phase.
+ |      
+ |      In the second phase, it generates multiple solutions by using
+ |      the information computed and stored in the first phase and by
+ |      continuing to explore the tree.
+ |      
+ |      For more information, see the function :mipapi:`CPXpopulate` in the
+ |      Callable Library Reference Manual and the topic solution pool
+ |      in the CPLEX User's Manual.
+ |  
+ |  read(self, filename, filetype='')
+ |      Reads a problem from file.
+ |      
+ |      The first argument is a string specifying the filename from which
+ |      the problem will be read.
+ |      
+ |      If the method is called with two arguments, the second argument
+ |      is a string specifying the file type. If this argument is
+ |      omitted, filetype is taken to be the extension of the filename.
+ |      
+ |      See :cpxapi:`CPXreadcopyprob` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |  
+ |  read_annotations(self, filename)
+ |      Reads annotations from a file.
+ |      
+ |      See :cpxapi:`CPXreadcopyannotations` in the Callable Library
+ |      Reference Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> idx = c.long_annotations.add('ann1', 0)
+ |      >>> objtype = c.long_annotations.object_type.variable
+ |      >>> indices = c.variables.add(names=['v1', 'v2', 'v3'])
+ |      >>> c.long_annotations.set_values(idx, objtype,
+ |      ...                               [(i, 1) for i in indices])
+ |      >>> idx = c.double_annotations.add('ann1', 0)
+ |      >>> objtype = c.double_annotations.object_type.variable
+ |      >>> indices = c.variables.add(names=['v1', 'v2', 'v3'])
+ |      >>> c.double_annotations.set_values(idx, objtype,
+ |      ...                                 [(i, 1) for i in indices])
+ |      >>> c.write_annotations('example.ann')
+ |      >>> c.long_annotations.delete()
+ |      >>> c.double_annotations.delete()
+ |      >>> c.long_annotations.get_num()
+ |      0
+ |      >>> c.double_annotations.get_num()
+ |      0
+ |      >>> c.read_annotations('example.ann')
+ |      >>> c.long_annotations.get_num()
+ |      1
+ |      >>> c.double_annotations.get_num()
+ |      1
+ |  
+ |  register_callback(self, callback_class)
+ |      Registers a callback class for use during optimization.
+ |      
+ |      callback_class must be a proper subclass of one of the callback
+ |      classes defined in the module `callbacks`. To implement custom
+ |      logic, override the __call__ method with a method that has
+ |      signature __call__(self) -> None. If callback_class is a subclass
+ |      of more than one callback class, it will only be called when its
+ |      first superclass is called. register_callback returns the
+ |      instance of callback_class registered for use. Any previously
+ |      registered callback of the same class will no longer be
+ |      registered.
+ |      
+ |      Returns an instance of callback_class.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> class MyMIPInfoCallback(cplex.callbacks.MIPInfoCallback):
+ |      ...     pass
+ |      >>> cb = c.register_callback(MyMIPInfoCallback)
+ |  
+ |  remove_aborter(self)
+ |      Removes the `Aborter` being used by the invoking object.
+ |      
+ |      Returns the aborter that was removed or None.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> aborter = c.use_aborter(cplex.Aborter())
+ |      >>> aborter = c.remove_aborter()
+ |  
+ |  runseeds(self, cnt=30)
+ |      Evaluates the variability of the problem.
+ |      
+ |      Solves the same problem instance multiple times using different
+ |      random seeds allowing the user to evaluate the variability of the
+ |      problem class the instance belongs to.
+ |      
+ |      The optional cnt argument specifies the number of times
+ |      optimization should be performed (the default is 30).
+ |      
+ |      A problem must be an MILP, MIQP, or MIQCP and must exist in
+ |      memory.
+ |  
+ |  set_callback(self, functor=None, contextmask=0)
+ |      Set callback function to use during optimization.
+ |      
+ |      Sets the callback that CPLEX invokes during optimization. If
+ |      functor is None then contextmask will be treated as 0 and the
+ |      callback is effectively cleared from CPLEX.
+ |      
+ |      In all other cases functor must be a reference to an object that
+ |      has a callable member called 'invoke' (if that does not exist, or
+ |      is not a callable, an exception will occur the first time CPLEX
+ |      attempts to invoke the callback). Whenever CPLEX needs to invoke
+ |      the callback it calls this member with exactly one argument: an
+ |      instance of `cplex.callbacks.Context`.
+ |      
+ |      Note that in the 'invoke' function you must not invoke any
+ |      functions of the Cplex instance that is performing the current
+ |      solve. All functions that can be invoked from a callback are
+ |      members of the `cplex.callbacks.Context` class.
+ |      
+ |      contextmask must be the bitwise OR of values from
+ |      `cplex.callbacks.Context.id` and specifies in which contexts
+ |      CPLEX shall invoke the callback: the callback is invoked in all
+ |      contexts for which the corresponding bit is set in contextmask.
+ |      
+ |      Note about cplex.callbacks.Context.id.thread_down: This is
+ |      considered a "destructor" function and should not raise any
+ |      exception. Any exception raised from the callback in this context
+ |      will just be ignored.
+ |      
+ |      See `cplex.callbacks.Context`.
+ |      
+ |      See :cpxapi:`CPXcallbacksetfunc` in the Callable Library
+ |      Reference Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> class GenericCB():
+ |      ...     def invoke(self, context):
+ |      ...         pass  # Do something here.
+ |      >>> cb = GenericCB()
+ |      >>> c.set_callback(cb)  # Register callback.
+ |      >>> c.set_callback(None)  # Clear callback.
+ |  
+ |  set_error_stream(self, error_file, fn=None)
+ |      Specifies where errors will be printed.
+ |      
+ |      The first argument must be a file-like object (i.e., an object
+ |      with a write method and a flush method). Use None as the first
+ |      argument to suppress output.
+ |      
+ |      The second optional argument is a function that takes a string as
+ |      input and returns a string. If specified, strings sent to this
+ |      stream will be processed by this function before being written.
+ |      
+ |      Returns the stream to which errors will be written. To write to
+ |      this stream, use this object's write() method.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> with cplex.Cplex() as c, open("output.txt", "w") as f:
+ |      ...     output = c.set_error_stream(f)
+ |      ...     output.write("this is an example")
+ |  
+ |  set_log_stream(self, log_file, fn=None)
+ |      Specifies where the log will be printed.
+ |      
+ |      The first argument must be a file-like object (i.e., an object
+ |      with a write method and a flush method). Use None as the first
+ |      argument to suppress output.
+ |      
+ |      The second optional argument is a function that takes a string as
+ |      input and returns a string. If specified, strings sent to this
+ |      stream will be processed by this function before being written.
+ |      
+ |      Returns the stream to which the log will be written. To write to
+ |      this stream, use this object's write() method.
+ |      
+ |      >>> import cplex
+ |      >>> with cplex.Cplex() as c, open("output.txt", "w") as f:
+ |      ...     output = c.set_log_stream(f)
+ |      ...     output.write("this is an example")
+ |  
+ |  set_modeling_assistance_callback(self, functor=None)
+ |      Set callback function to use for modeling assistance warnings.
+ |      
+ |      Sets the callback that CPLEX invokes before and after
+ |      optimization (once for every modeling issue detected). If functor
+ |      is None then the callback is effectively cleared from CPLEX. The
+ |      callback function will only be invoked if the CPLEX parameter
+ |      Cplex.parameters.read.datacheck is set to
+ |      Cplex.parameters.read.datacheck.values.assist (2). In addition,
+ |      the parameter Cplex.parameters.read.warninglimit controls the
+ |      number of times each type of modeling assistance warning will be
+ |      reported (the rest will be ignored). See CPX_PARAM_DATACHECK and
+ |      CPX_PARAM_WARNLIM in the Parameters of CPLEX Reference Manual.
+ |      
+ |      In all other cases functor must be a reference to an object that
+ |      has a callable attribute named 'invoke' (if that does not exist,
+ |      or is not a callable, an exception will occur the first time CPLEX
+ |      attempts to invoke the callback). Whenever CPLEX needs to invoke
+ |      the callback it calls this member with two argument: the modeling
+ |      issue ID and the associated warning message.
+ |      
+ |      See `model_info`.
+ |      
+ |      See :cpxapi:`CPXmodelasstcallbacksetfunc` in the Callable Library
+ |      Reference Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> c.parameters.read.datacheck.set(
+ |      ...     c.parameters.read.datacheck.values.assist)
+ |      >>> class ModelAsstCB():
+ |      ...     def invoke(self, issueid, message):
+ |      ...         pass  # Do something here.
+ |      >>> cb = ModelAsstCB()
+ |      >>> c.set_modeling_assistance_callback(cb)  # Register callback.
+ |      >>> c.set_modeling_assistance_callback(None)  # Clear callback.
+ |  
+ |  set_parameter_set(self, source)
+ |      Applies the parameter values in the paramset to the
+ |      environment.
+ |      
+ |      Note
+ |        The source parameter set must have been created by this CPLEX
+ |        problem object. Mixing parameter sets from different CPLEX
+ |        problem objects is not supported.
+ |      
+ |      See :cpxapi:`CPXparamsetapply` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> ps = c.create_parameter_set()
+ |      >>> ps.add(c.parameters.advance,
+ |      ...        c.parameters.advance.values.none)
+ |      >>> c.set_parameter_set(ps)
+ |      >>> value = c.parameters.advance.get()
+ |      >>> value == c.parameters.advance.values.none
+ |      True
+ |  
+ |  set_problem_name(self, name)
+ |      Sets the problem name.
+ |      
+ |      See :cpxapi:`CPXchgprobname` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> c.set_problem_name("prob1")
+ |      >>> c.get_problem_name()
+ |      'prob1'
+ |  
+ |  set_problem_type(self, type, soln=None)
+ |      Changes the problem type.
+ |      
+ |      If only one argument is given, that argument specifies the new
+ |      problem type (see `problem_type`). It must be one of the
+ |      following:
+ |      
+ |      * Cplex.problem_type.LP
+ |      * Cplex.problem_type.MILP
+ |      * Cplex.problem_type.fixed_MILP
+ |      * Cplex.problem_type.QP
+ |      * Cplex.problem_type.MIQP
+ |      * Cplex.problem_type.fixed_MIQP
+ |      * Cplex.problem_type.QCP
+ |      * Cplex.problem_type.MIQCP
+ |      
+ |      If an optional second argument is given, it is taken to be an
+ |      identifier of a member of the solution pool. In this case, the
+ |      first argument must be one of the following:
+ |      
+ |      * Cplex.problem_type.fixed_MILP
+ |      * Cplex.problem_type.fixed_MIQP
+ |      
+ |      See :cpxapi:`CPXchgprobtype` and :cpxapi:`CPXchgprobtypesolnpool`
+ |      in the Callable Library Reference Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> c.set_problem_type(c.problem_type.LP)
+ |  
+ |  set_results_stream(self, results_file, fn=None)
+ |      Specifies where results will be printed.
+ |      
+ |      The first argument must be a file-like object (i.e., an object
+ |      with a write method and a flush method). Use None as the first
+ |      argument to suppress output.
+ |      
+ |      The second optional argument is a function that takes a string as
+ |      input and returns a string. If specified, strings sent to this
+ |      stream will be processed by this function before being written.
+ |      
+ |      Returns the stream to which results will be written. To write to
+ |      this stream, use this object's write() method.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> with cplex.Cplex() as c, open("output.txt", "w") as f:
+ |      ...     output = c.set_results_stream(f)
+ |      ...     output.write("this is an example")
+ |  
+ |  set_warning_stream(self, warning_file, fn=None)
+ |      Specifies where warnings will be printed.
+ |      
+ |      The first argument must be a file-like object (i.e., an object
+ |      with a write method and a flush method). Use None as the first
+ |      argument to suppress output.
+ |      
+ |      The second optional argument is a function that takes a string as
+ |      input and returns a string. If specified, strings sent to this
+ |      stream will be processed by this function before being written.
+ |      
+ |      Returns the stream to which warnings will be written. To write to
+ |      this stream, use this object's write() method.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> with cplex.Cplex() as c, open("output.txt", "w") as f:
+ |      ...     output = c.set_warning_stream(f)
+ |      ...     output.write("this is an example")
+ |  
+ |  solve(self, paramsets=None)
+ |      Solves the problem.
+ |      
+ |      The optional paramsets argument can only be specified when
+ |      multiple objectives are present (otherwise, a ValueError is
+ |      raised). paramsets must be a sequence containing `ParameterSet`
+ |      objects (see `Cplex.create_parameter_set`) or None. See
+ |      :cpxapi:`CPXmultiobjopt` in the Callable Library Reference Manual
+ |      for more detail.
+ |      
+ |      Note
+ |        The solve method returning normally (i.e., without raising an
+ |        exception) does not necessarily mean that an optimal or
+ |        feasible solution has been found. Use
+ |        `SolutionInterface.get_status()` to query the status of the
+ |        current solution.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> status = c.solution.get_status()
+ |  
+ |  unregister_callback(self, callback_class)
+ |      Stops a callback class from being used.
+ |      
+ |      callback_class must be one of the callback classes defined in the
+ |      module `callbacks` or a subclass of one of them. This method
+ |      unregisters any previously registered callback of the same class.
+ |      If callback_class is a subclass of more than one callback class,
+ |      this method will unregister only the callback of the same type as
+ |      its first superclass.
+ |      
+ |      Returns the instance of callback_class just unregistered.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> class MyMIPInfoCallback(cplex.callbacks.MIPInfoCallback):
+ |      ...     pass
+ |      >>> cb = c.register_callback(MyMIPInfoCallback)
+ |      >>> cb = c.unregister_callback(MyMIPInfoCallback)
+ |  
+ |  use_aborter(self, aborter)
+ |      Use an `Aborter` to control termination of solve methods.
+ |      
+ |      Instructs the invoking object to use the aborter to control
+ |      termination of its solving and tuning methods.
+ |      
+ |      If another aborter is already being used by the invoking object,
+ |      then this method overrides the previously used aborter.
+ |      
+ |      Returns the aborter installed in the invoking object or None.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> aborter = c.use_aborter(cplex.Aborter())
+ |  
+ |  write(self, filename, filetype='')
+ |      Writes a problem to a file.
+ |      
+ |      The first argument is a string specifying the filename to which
+ |      the problem will be written.
+ |      
+ |      If the filename ends with .bz2 (for BZip2) or .gz (for GNU Zip),
+ |      a compressed file is written.
+ |      
+ |      If the method is called with two arguments, the second argument
+ |      is a string specifying the file type. If this argument is
+ |      omitted, filetype is taken to be the extension of the filename.
+ |      
+ |      If filetype is any of "sav", "mps", "lp", the problem is written
+ |      in the corresponding format. If filetype is either "rew" or "rlp"
+ |      the problem is written with generic names in mps or lp format,
+ |      respectively. If filetype is "alp" the problem is written with
+ |      generic names in lp format, where the variable names are
+ |      annotated to indicate the type and bounds of each variable.
+ |      
+ |      If filetype is "dua", the dual problem is written to a file. If
+ |      filetype is "emb", an embedded network problem is written to a
+ |      file. If filetype is "ppe", the perturbed problem is written to a
+ |      file. If filetype is "dpe", the perturbed dual problem is written
+ |      to a file.
+ |      
+ |      For documentation of the file types, see the CPLEX File Format
+ |      Reference Manual.
+ |      
+ |      See :cpxapi:`CPXwriteprob`, :cpxapi:`CPXdualwrite`,
+ |      :cpxapi:`CPXembwrite`, :cpxapi:`CPXdperwrite`, and
+ |      :cpxapi:`CPXpperwrite` in the Callable Library Reference Manual
+ |      for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> indices = c.variables.add(names=['x1', 'x2', 'x3'])
+ |      >>> c.write("example.lp")
+ |  
+ |  write_annotations(self, filename)
+ |      Writes the annotations to a file.
+ |      
+ |      See :cpxapi:`CPXwriteannotations` in the Callable Library
+ |      Reference Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> idx = c.long_annotations.add('ann1', 0)
+ |      >>> objtype = c.long_annotations.object_type.variable
+ |      >>> indices = c.variables.add(names=['v1', 'v2', 'v3'])
+ |      >>> c.long_annotations.set_values(idx, objtype,
+ |      ...                               [(i, 1) for i in indices])
+ |      >>> c.write_annotations('example.ann')
+ |  
+ |  write_as_string(self, filetype='LP', comptype='')
+ |      Writes a problem as a string in the given file format.
+ |      
+ |      For an explanation of the filetype and comptype arguments, see
+ |      `Cplex.write_to_stream`.
+ |      
+ |      Note
+ |        When SAV format is specified for filetype or a compressed file
+ |        format is specified for comptype, the return value will be a
+ |        byte string.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> indices = c.variables.add(names=['x1', 'x2', 'x3'])
+ |      >>> lp_str = c.write_as_string("lp")
+ |      >>> len(lp_str) > 0
+ |      True
+ |  
+ |  write_benders_annotation(self, filename)
+ |      Writes the annotation of the auto-generated decomposition.
+ |      
+ |      Writes the annotation of the decompostion CPLEX automatically
+ |      generates for the model of the CPLEX problem object to the
+ |      specified file.
+ |      
+ |      See :cpxapi:`CPXwritebendersannotation` in the Callable Library
+ |      Reference Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read('UFL_25_35_1.mps')
+ |      >>> c.write_benders_annotation('UFL_25_35_1.ann')
+ |  
+ |  write_to_stream(self, stream, filetype='LP', comptype='')
+ |      Writes a problem to a file-like object in the given file format.
+ |      
+ |      The filetype argument can be any of "sav" (a binary format), "lp"
+ |      (the default), "mps", "rew", "rlp", or "alp" (see `Cplex.write`
+ |      for an explanation of these).
+ |      
+ |      If comptype is "bz2" (for BZip2) or "gz" (for GNU Zip), a
+ |      compressed file is written.
+ |      
+ |      See :cpxapi:`CPXwriteprob` in the Callable Library Reference
+ |      Manual for more detail.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> indices = c.variables.add(names=['x1', 'x2', 'x3'])
+ |      >>> class NoOpStream():
+ |      ...     def __init__(self):
+ |      ...         self.was_called = False
+ |      ...     def write(self, bytes):
+ |      ...         self.was_called = True
+ |      ...         pass
+ |      ...     def flush(self):
+ |      ...         pass
+ |      >>> stream = NoOpStream()
+ |      >>> c.write_to_stream(stream)
+ |      >>> stream.was_called
+ |      True
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data descriptors defined here:
+ |  
+ |  __dict__
+ |      dictionary for instance variables (if defined)
+ |  
+ |  __weakref__
+ |      list of weak references to the object (if defined)
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data and other attributes defined here:
+ |  
+ |  problem_type = <cplex._internal.ProblemType object>
+

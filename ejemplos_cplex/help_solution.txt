@@ -1,0 +1,541 @@
+Help on SolutionInterface in module cplex._internal._subinterfaces object:
+
+class SolutionInterface(cplex._internal._baseinterface.BaseInterface)
+ |  SolutionInterface(cplex)
+ |  
+ |  Methods for querying the solution to an optimization problem.
+ |  
+ |  Method resolution order:
+ |      SolutionInterface
+ |      cplex._internal._baseinterface.BaseInterface
+ |      builtins.object
+ |  
+ |  Methods defined here:
+ |  
+ |  __init__(self, cplex)
+ |      Creates a new SolutionInterface.
+ |      
+ |      The solution interface is exposed by the top-level `Cplex` class
+ |      as Cplex.solution.  This constructor is not meant to be used
+ |      externally.
+ |  
+ |  get_activity_levels(self, *args)
+ |      Returns the activity levels for set of linear constraints.
+ |      
+ |      Can be called by four forms.
+ |      
+ |      solution.get_activity_levels()
+ |        return the activity levels for all linear constraints from
+ |        the problem.
+ |      
+ |      solution.get_activity_levels(i)
+ |        i must be a linear constraint name or index.  Returns the
+ |        activity levels for the linear constraint whose index or
+ |        name is i.
+ |      
+ |      solution.get_activity_levels(s)
+ |        s must be a sequence of linear constraint names or indices.
+ |        Returns the activity levels for the linear constraints with
+ |        indices the members of s.  Equivalent to
+ |        [solution.get_activity_levels(i) for i in s]
+ |      
+ |      solution.get_activity_levels(begin, end)
+ |        begin and end must be linear constraint indices or linear
+ |        constraint names. Returns the activity levels for the linear
+ |        constraints with indices between begin and end, inclusive of
+ |        end. Equivalent to
+ |        solution.get_activity_levels(range(begin, end + 1)).
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> c.solution.get_activity_levels([2, 3, 12])
+ |      [80.0, 0.0, 500.0]
+ |  
+ |  get_dual_values(self, *args)
+ |      Returns a set of dual values.
+ |      
+ |      Note that the values returned by this function are not only
+ |      meaningful for linear programs. Also for second order cone
+ |      programs, they provide information about the dual solution.
+ |      Refer to the user manual to see how to use the values returned by
+ |      this function for second order cone programs.
+ |      
+ |      Can be called by four forms.
+ |      
+ |      solution.get_dual_values()
+ |        return all dual values from the problem.
+ |      
+ |      solution.get_dual_values(i)
+ |        i must be a linear constraint name or index.  Returns the
+ |        dual value associated with the linear constraint whose
+ |        index or name is i.
+ |      
+ |      solution.get_dual_values(s)
+ |        s must be a sequence of linear constraint names or indices.
+ |        Returns the dual values associated with the linear
+ |        constraints with indices the members of s.  Equivalent to
+ |        [solution.get_dual_values(i) for i in s]
+ |      
+ |      solution.get_dual_values(begin, end)
+ |        begin and end must be linear constraint indices or linear
+ |        constraint names. Returns the dual values associated with the
+ |        linear constraints with indices between begin and end,
+ |        inclusive of end. Equivalent to
+ |        solution.get_dual_values(range(begin, end + 1)).
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> pi = c.solution.get_dual_values([0, 1])
+ |      >>> for i, j in zip(pi, [-0.628571, 0.0]):
+ |      ...     abs(i - j) < 1e-6
+ |      ...
+ |      True
+ |      True
+ |  
+ |  get_float_quality(self, which)
+ |      Returns a measure of the quality of the solution.
+ |      
+ |      The measure of the quality of a solution can be a single attribute of
+ |      solution.quality_metrics or a sequence of such attributes.
+ |      
+ |      Note
+ |        This corresponds to the CPLEX callable library function
+ |        CPXgetdblquality.
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> m = c.solution.quality_metric
+ |      >>> c.solution.get_float_quality([m.max_x, m.max_dual_infeasibility])
+ |      [500.0, 0.0]
+ |  
+ |  get_indicator_slacks(self, *args)
+ |      Returns a set of indicator slacks.
+ |      
+ |      Can be called by four forms.
+ |      
+ |      solution.get_indicator_slacks()
+ |        return all indicator slack values from the problem.
+ |      
+ |      solution.get_indicator_slacks(i)
+ |        i must be a indicator constraint name or index.  Returns
+ |        the slack values associated with the indicator constraint
+ |        whose index or name is i.
+ |      
+ |      solution.get_indicator_slacks(s)
+ |        s must be a sequence of indicator constraint names or
+ |        indices.  Returns the slack values associated with the
+ |        indicator constraints with indices the members of s.
+ |        Equivalent to [solution.get_indicator_slacks(i) for i in s]
+ |      
+ |      solution.get_indicator_slacks(begin, end)
+ |        begin and end must be indicator constraint indices or indicator
+ |        constraint names. Returns the slack values associated with the
+ |        indicator constraints with indices between begin and end,
+ |        inclusive of end. Equivalent to
+ |        solution.get_indicator_slacks(range(begin, end + 1)).
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("ind.lp")
+ |      >>> c.solve()
+ |      >>> c.solution.get_indicator_slacks([0, 18])
+ |      [1e+20, 0.0]
+ |  
+ |  get_integer_quality(self, which)
+ |      Returns a measure of the quality of the solution.
+ |      
+ |      The measure of the quality of a solution can be a single attribute of
+ |      solution.quality_metrics or a sequence of such
+ |      attributes.
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> m = c.solution.quality_metric
+ |      >>> c.solution.get_integer_quality([m.max_x, m.max_dual_infeasibility])
+ |      [18, -1]
+ |  
+ |  get_linear_slacks(self, *args)
+ |      Returns a set of linear slacks.
+ |      
+ |      Can be called by four forms.
+ |      
+ |      solution.get_linear_slacks()
+ |        return all linear slack values from the problem.
+ |      
+ |      solution.get_linear_slacks(i)
+ |        i must be a linear constraint name or index.  Returns the
+ |        slack values associated with the linear constraint whose
+ |        index or name is i.
+ |      
+ |      solution.get_linear_slacks(s)
+ |        s must be a sequence of linear constraint names or indices.
+ |        Returns the slack values associated with the linear
+ |        constraints with indices the members of s.  Equivalent to
+ |        [solution.get_linear_slacks(i) for i in s]
+ |      
+ |      solution.get_linear_slacks(begin, end)
+ |        begin and end must be linear constraint indices or linear
+ |        constraint names. Returns the slack values associated with the
+ |        linear constraints with indices between begin and end,
+ |        inclusive of end. Equivalent to
+ |        solution.get_linear_slacks(range(begin, end + 1)).
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("ind.lp")
+ |      >>> c.solve()
+ |      >>> abs(c.solution.get_linear_slacks(5)) < 1e-6
+ |      True
+ |  
+ |  get_method(self)
+ |      Returns the method used to solve the problem.
+ |      
+ |      Returns an attribute of Cplex.solution.method.
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("example.mps")
+ |      >>> c.solve()
+ |      >>> c.solution.get_method()
+ |      2
+ |  
+ |  get_objective_value(self)
+ |      Returns the value of the objective function.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("example.mps")
+ |      >>> c.solve()
+ |      >>> c.solution.get_objective_value()
+ |      -202.5
+ |  
+ |  get_quadratic_activity_levels(self, *args)
+ |      Returns the activity levels for set of quadratic constraints.
+ |      
+ |      Can be called by four forms.
+ |      
+ |      solution.get_quadratic_activity_levels()
+ |        return the activity levels for all quadratic constraints
+ |        from the problem.
+ |      
+ |      solution.get_quadratic_activity_levels(i)
+ |        i must be a quadratic constraint name or index.  Returns
+ |        the activity levels for the quadratic constraint whose
+ |        index or name is i.
+ |      
+ |      solution.get_quadratic_activity_levels(s)
+ |        s must be a sequence of quadratic constraint names or
+ |        indices.  Returns the activity levels for the quadratic
+ |        constraints with indices the members of s.  Equivalent to
+ |        [solution.get_quadratic_activity_levels(i) for i in s]
+ |      
+ |      solution.get_quadratic_activity_levels(begin, end)
+ |        begin and end must be quadratic constraint indices or quadratic
+ |        constraint names. Returns the activity levels for the quadratic
+ |        constraints with indices between begin and end, inclusive of
+ |        end. Equivalent to
+ |        solution.get_quadratic_activity_levels(range(begin, end + 1)).
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> c.read("qcp.lp")
+ |      >>> c.solve()
+ |      >>> xqxax = c.solution.get_quadratic_activity_levels()
+ |      >>> abs(xqxax[0] - 2.015616) < 1e-6
+ |      True
+ |  
+ |  get_quadratic_dualslack(self, *args)
+ |      Returns the dual slack for a quadratic constraint.
+ |      
+ |      The function returns the dual slack vector of its arguments as a
+ |      SparsePair.
+ |      The function argument may be either the index or the name of a
+ |      quadratic constraint.
+ |  
+ |  get_quadratic_slacks(self, *args)
+ |      Returns a set of quadratic slacks.
+ |      
+ |      Can be called by four forms.
+ |      
+ |      solution.get_quadratic_slacks()
+ |        return all quadratic slack values from the problem.
+ |      
+ |      solution.get_quadratic_slacks(i)
+ |        i must be a quadratic constraint name or index.  Returns
+ |        the slack values associated with the quadratic constraint
+ |        whose index or name is i.
+ |      
+ |      solution.get_quadratic_slacks(s)
+ |        s must be a sequence of quadratic constraint names or
+ |        indices.  Returns the slack values associated with the
+ |        quadratic constraints with indices the members of s.
+ |        Equivalent to [solution.get_quadratic_slacks(i) for i in s]
+ |      
+ |      solution.get_quadratic_slacks(begin, end)
+ |        begin and end must be quadratic constraint indices or quadratic
+ |        constraint names. Returns the slack values associated with the
+ |        quadratic constraints with indices between begin and end,
+ |        inclusive of end. Equivalent to
+ |        solution.get_quadratic_slacks(range(begin, end + 1)).
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> c.read("qcp.lp")
+ |      >>> c.solve()
+ |      >>> slack = c.solution.get_quadratic_slacks(0)
+ |      >>> abs(slack) < 1e-6
+ |      True
+ |  
+ |  get_quality_metrics(self)
+ |      Returns an object containing measures of the solution quality.
+ |      
+ |      See `QualityMetrics`.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> qm = c.solution.get_quality_metrics()
+ |  
+ |  get_reduced_costs(self, *args)
+ |      Returns the reduced costs of a set of variables.
+ |      
+ |      The values returned by this method are defined to be the dual
+ |      multipliers for bound constraints on the specified variables.
+ |      
+ |      Can be called by four forms.
+ |      
+ |      solution.get_reduced_costs()
+ |        return the reduced costs of all variables from the problem.
+ |      
+ |      solution.get_reduced_costs(i)
+ |        i must be a variable name or index.  Returns the reduced
+ |        cost of the variable whose index or name is i.
+ |      
+ |      solution.get_reduced_costs(s)
+ |        s must be a sequence of variable names or indices.  Returns
+ |        the reduced costs of the variables with indices the members
+ |        of s.  Equivalent to [solution.get_reduced_costs(i) for i
+ |        in s]
+ |      
+ |      solution.get_reduced_costs(begin, end)
+ |        begin and end must be variable indices or variable names.
+ |        Returns the reduced costs of the variables with indices between
+ |        begin and end, inclusive of end. Equivalent to
+ |        solution.get_reduced_costs(range(begin, end + 1)).
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> c.solution.get_reduced_costs([0, 4, 5])
+ |      [0.0, 10.0, 0.0]
+ |  
+ |  get_solution_type(self)
+ |      Returns the type of the solution.
+ |      
+ |      Returns an attribute of Cplex.solution.type.
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> c.solution.get_solution_type()
+ |      1
+ |  
+ |  get_status(self)
+ |      Returns the status of the solution.
+ |      
+ |      Returns an attribute of Cplex.solution.status.
+ |      For interpretations of the status codes, see the
+ |      reference manual of the CPLEX Callable Library,
+ |      especially the group optim.cplex.callable.solutionstatus
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("example.mps")
+ |      >>> c.solve()
+ |      >>> c.solution.get_status()
+ |      1
+ |  
+ |  get_status_string(self, status_code=None)
+ |      Returns a string describing the status of the solution.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("example.mps")
+ |      >>> c.solve()
+ |      >>> c.solution.get_status_string()
+ |      'optimal'
+ |  
+ |  get_values(self, *args)
+ |      Returns the values of a set of variables at the solution.
+ |      
+ |      Can be called by four forms.
+ |      
+ |      solution.get_values()
+ |        return the values of all variables from the problem.
+ |      
+ |      solution.get_values(i)
+ |        i must be a variable name or index.  Returns the value of
+ |        the variable whose index or name is i.
+ |      
+ |      solution.get_values(s)
+ |        s must be a sequence of variable names or indices.  Returns
+ |        the values of the variables with indices the members of s.
+ |        Equivalent to [solution.get_values(i) for i in s]
+ |      
+ |      solution.get_values(begin, end)
+ |        begin and end must be variable indices or variable names.
+ |        Returns the values of the variables with indices between begin
+ |        and end, inclusive of end. Equivalent to
+ |        solution.get_values(range(begin, end + 1)).
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> c.solution.get_values([0, 4, 5])
+ |      [25.5, 0.0, 80.0]
+ |  
+ |  is_dual_feasible(self)
+ |      Returns whether or not the solution is known to be dual feasible.
+ |      
+ |      Note
+ |        Returning False does not necessarily mean that the problem is
+ |        not dual feasible, only that it is not proved to be dual
+ |        feasible.
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> c.solution.is_dual_feasible()
+ |      True
+ |  
+ |  is_primal_feasible(self)
+ |      Returns whether or not the solution is known to be primal feasible.
+ |      
+ |      Note
+ |        Returning False does not necessarily mean that the problem is
+ |        not primal feasible, only that it is not proved to be primal
+ |        feasible.
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> c.solution.is_primal_feasible()
+ |      True
+ |  
+ |  write(self, filename)
+ |      Writes the incumbent solution to a file.
+ |      
+ |      See :cpxapi:`CPXsolwrite` in the Callable Library Reference
+ |      Manual and also `InitialInterface.read_start()`.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> out = c.set_results_stream(None)
+ |      >>> out = c.set_log_stream(None)
+ |      >>> c.read("lpex.mps")
+ |      >>> c.solve()
+ |      >>> c.solution.write("lpex.sol")
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data and other attributes defined here:
+ |  
+ |  method = <cplex._internal._subinterfaces.SolutionMethod object>
+ |  
+ |  quality_metric = <cplex._internal._subinterfaces.QualityMetric object>
+ |  
+ |  status = <cplex._internal._subinterfaces.SolutionStatus object>
+ |  
+ |  type = <cplex._internal._subinterfaces.SolutionType object>
+ |  
+ |  ----------------------------------------------------------------------
+ |  Methods inherited from cplex._internal._baseinterface.BaseInterface:
+ |  
+ |  get_indices(self, name)
+ |      Converts from names to indices.
+ |      
+ |      If name is a string, get_indices returns the index of the
+ |      object with that name.  If no such object exists, an
+ |      exception is raised.
+ |      
+ |      If name is a sequence of strings, get_indices returns a list
+ |      of the indices corresponding to the strings in name.
+ |      Equivalent to map(self.get_indices, name).
+ |      
+ |      If the subclass does not provide an index function (i.e., the
+ |      interface is not indexed), then a NotImplementedError is raised.
+ |      
+ |      Example usage:
+ |      
+ |      >>> import cplex
+ |      >>> c = cplex.Cplex()
+ |      >>> indices = c.variables.add(names=["a", "b"])
+ |      >>> c.variables.get_indices("a")
+ |      0
+ |      >>> c.variables.get_indices(["a", "b"])
+ |      [0, 1]
+ |  
+ |  ----------------------------------------------------------------------
+ |  Data descriptors inherited from cplex._internal._baseinterface.BaseInterface:
+ |  
+ |  __dict__
+ |      dictionary for instance variables (if defined)
+ |  
+ |  __weakref__
+ |      list of weak references to the object (if defined)
+
